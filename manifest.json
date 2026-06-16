@@ -1,0 +1,14 @@
+{
+  "name": "AE Home POS System",
+  "short_name": "AE POS",
+  "description": "AE Home Trade Corp. Point of Sale System",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#1e90ff",
+  "orientation": "any",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
