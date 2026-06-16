@@ -1,129 +1,338 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<meta name="theme-color" content="#1e90ff">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="AE Home POS">
-<title>AE Home POS System</title>
-<link rel="manifest" href="manifest.json">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=DM+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AE Home Trade Corp. - POS & Inventory System</title>
+  <!-- Bootstrap 5 CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    :root {
+      --primary-color: #2e7d32; /* Modern Nature Green */
+      --secondary-color: #1565c0; /* Professional Blue */
+      --dark-bg: #1e293b;
+    }
+    body {
+      background-color: #f8fafc;
+      font-family: system-ui, -apple-system, sans-serif;
+    }
+    .sidebar {
+      background-color: var(--dark-bg);
+      min-height: 100vh;
+      color: white;
+    }
+    .sidebar .nav-link {
+      color: #cbd5e1;
+      transition: all 0.2s;
+    }
+    .sidebar .nav-link:hover, .sidebar .nav-link.active {
+      color: white;
+      background-color: rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+    }
+    .product-card {
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .product-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+    }
+  </style>
 </head>
 <body>
 
-<!-- LOGIN SCREEN -->
-<div id="loginScreen" class="screen active">
- <div class="login-bg"></div>
- <div class="login-card">
- <div class="login-logo">
- <div class="logo-icon"></div>
- <h1>AE Home</h1>
- <p>Point of Sale System</p>
- </div>
- <div class="login-form">
- <div class="form-group">
- <label for="loginUser">Username</label>
- <input type="text" id="loginUser" name="username" placeholder="Enter username" autocomplete="off">
- </div>
- <div class="form-group">
- <label for="loginPass">Password</label>
- <input type="password" id="loginPass" name="password" placeholder="Enter password">
- </div>
- <button class="btn-login" onclick="doLogin()">Sign In</button>
- <button class="btn-viewer" onclick="enterViewerMode()">️ Continue as Viewer</button>
- </div>
- <div id="loginError" class="login-error hidden"></div>
- </div>
-</div>
+  <!-- 1. LOGIN SCREEN -->
+  <div id="login-screen" class="app-screen container d-flex align-items-center justify-content-center min-vh-100">
+    <div class="card shadow-lg p-4" style="max-width: 400px; width: 100%; border-radius: 12px;">
+      <div class="text-center mb-4">
+        <h2 class="fw-bold text-success mb-1">AE HOME</h2>
+        <small class="text-muted">POS & Inventory Login</small>
+      </div>
+      <form onsubmit="event.preventDefault(); handleLogin(document.getElementById('login-user').value, document.getElementById('login-pass').value);">
+        <div class="mb-3">
+          <label class="form-label">Username</label>
+          <input type="text" id="login-user" class="form-control" required placeholder="Ipasok ang username">
+        </div>
+        <div class="mb-4">
+          <label class="form-label">Password</label>
+          <input type="password" id="login-pass" class="form-control" required placeholder="Ipasok ang password">
+        </div>
+        <button type="submit" class="btn btn-success w-100 py-2 fw-bold">Mag-log In</button>
+      </form>
+    </div>
+  </div>
 
-<!-- MAIN APP -->
-<div id="appScreen" class="screen hidden">
+  <!-- MAIN APP WRAPPER (HIDDEN BY DEFAULT UNTIL LOGIN) -->
+  <div id="main-app-layout" class="container-fluid d-none">
+    <div class="row">
+      
+      <!-- 2. SIDEBAR MENU -->
+      <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar collapse p-3 shadow">
+        <div class="d-flex align-items-center justify-content-between mb-4 px-2">
+          <h4 class="text-success fw-bold mb-0">AE HOME</h4>
+          <button class="btn btn-sm btn-outline-light d-md-none" data-bs-toggle="collapse" data-bs-target="#sidebarMenu">
+            <i class="bi bi-x-lg"></i>
+          </button>
+        </div>
+        
+        <!-- User Info Badge -->
+        <div class="bg-secondary bg-opacity-25 p-2 rounded mb-4 text-center">
+          <div id="user-display-name" class="fw-bold small">Loading User...</div>
+          <div id="user-display-role" class="text-muted" style="font-size: 0.8rem;">(Role)</div>
+        </div>
 
- <!-- SIDEBAR -->
- <aside id="sidebar" class="sidebar">
- <div class="sidebar-header">
-      <div class="sidebar-logo">
-        <div>
-          <div class="sidebar-title">AE Home</div>
-          <div class="sidebar-sub">POS System</div>
+        <!-- Navigation Links -->
+        <ul class="nav flex-column gap-1">
+          <li class="nav-item">
+            <a class="nav-link nav-link-item active" href="#" data-target="dashboard" onclick="showScreen('dashboard-screen')">
+              <i class="bi bi-speedometer2 me-2"></i> Dashboard
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link nav-link-item" href="#" data-target="pos" onclick="showScreen('pos-screen')">
+              <i class="bi bi-cpu me-2"></i> POS Screen
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link nav-link-item" href="#" data-target="inventory" onclick="showScreen('inventory-screen'); fetchInventory();">
+              <i class="bi bi-box-seam me-2"></i> Inventory
+            </a>
+          </li>
+          <li class="nav-item mt-4">
+            <hr class="text-muted">
+            <a class="nav-link text-danger fw-bold" href="#" onclick="clearSession()">
+              <i class="bi bi-box-arrow-left me-2"></i> Mag-logout
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+      <!-- 3. MAIN CONTENT AREA -->
+      <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 py-4">
+        
+        <!-- TOP NAVBAR FOR MOBILE VIEW -->
+        <div class="d-md-none d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm">
+          <h5 class="fw-bold mb-0 text-success">AE HOME</h5>
+          <button class="btn btn-outline-dark" data-bs-toggle="collapse" data-bs-target="#sidebarMenu">
+            <i class="bi bi-list"></i>
+          </button>
+        </div>
+
+        <!-- ==================================== -->
+        <!-- SCREEN A: DASHBOARD -->
+        <!-- ==================================== -->
+        <div id="dashboard-screen" class="app-screen">
+          <h2 class="h4 fw-bold text-dark mb-4">Dashboard Analytics</h2>
+          <div class="row g-3 mb-4">
+            <div class="col-12 col-sm-6 col-xl-3">
+              <div class="card border-0 shadow-sm p-3 bg-white">
+                <small class="text-muted fw-bold">Benta Ngayong Araw</small>
+                <h3 class="fw-bold text-primary mt-1">₱0.00</h3>
+              </div>
+            </div>
+            <div class="col-12 col-sm-6 col-xl-3">
+              <div class="card border-0 shadow-sm p-3 bg-white">
+                <small class="text-muted fw-bold">Mga Transaksyon</small>
+                <h3 class="fw-bold text-success mt-1">0</h3>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================================== -->
+        <!-- SCREEN B: POS OPERATIONS -->
+        <!-- ==================================== -->
+        <div id="pos-screen" class="app-screen d-none">
+          <div class="row g-3">
+            <!-- Left Side: Product Selection Grid -->
+            <div class="col-lg-8">
+              <div class="card border-0 shadow-sm p-3 mb-3 bg-white">
+                <div class="row g-2 align-items-center">
+                  <div class="col">
+                    <div class="input-group">
+                      <span class="input-group-text bg-light border-end-0"><i class="bi bi-search"></i></span>
+                      <input type="text" class="form-control bg-light border-start-0" placeholder="Hanapin ang produkto o i-scan ang barcode...">
+                    </div>
+                  </div>
+                  <div class="col-auto">
+                    <button class="btn btn-primary" onclick="toggleCameraScanner()">
+                      <i class="bi bi-camera me-1"></i> Scan
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Camera View Container -->
+              <div id="camera-scan-region" class="d-none card p-2 mb-3 border-primary text-center bg-white shadow-sm position-relative">
+                <div id="camera-scan-view" style="width: 100%; max-width: 320px; margin: 0 auto;"></div>
+                <button class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2" onclick="stopCameraScanner()">Isara</button>
+              </div>
+
+              <!-- Grid Render Target -->
+              <div id="pos-products-grid" class="row g-2">
+                <!-- Dito babagsak ang mga product cards mula sa app.js -->
+              </div>
+            </div>
+
+            <!-- Right Side: Live Sales Cart Sidebar -->
+            <div class="col-lg-4">
+              <div class="card border-0 shadow-sm h-100 bg-white d-flex flex-column justify-content-between p-3" style="min-height: 500px;">
+                <div>
+                  <h5 class="fw-bold mb-3 text-dark"><i class="bi bi-cart3 me-2"></i>Kasalukuyang Cart</h5>
+                  <div id="cart-items-list" class="pe-1" style="max-height: 380px; overflow-y: auto;">
+                    <!-- Listahan ng bibilhin -->
+                  </div>
+                </div>
+                
+                <div class="border-top pt-3 mt-3">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <span class="fw-bold text-muted">Kabuuang Halaga:</span>
+                    <h3 id="cart-total-payable" class="fw-bold text-success mb-0">₱0.00</h3>
+                  </div>
+                  <button class="btn btn-success w-100 py-2 fw-bold shadow-sm" onclick="openCheckoutModal()">
+                    PAGBAYAD (CHECKOUT)
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================================== -->
+        <!-- SCREEN C: INVENTORY CONTROL -->
+        <!-- ==================================== -->
+        <div id="inventory-screen" class="app-screen d-none">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="h4 fw-bold text-dark mb-0">Imbentaryo ng AE Home</h2>
+            <div class="d-flex gap-2">
+              <button class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#importModal">
+                <i class="bi bi-file-earmark-excel me-1"></i> Bulk Import
+              </button>
+              <button class="btn btn-success" onclick="document.getElementById('productCrudForm').reset(); new bootstrap.Modal(document.getElementById('productModal')).show();">
+                <i class="bi bi-plus-lg me-1"></i> Bagong Produkto
+              </button>
+            </div>
+          </div>
+
+          <div class="card border-0 shadow-sm p-3 bg-white">
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                  <tr>
+                    <th>Barcode</th>
+                    <th>Pangalan</th>
+                    <th>Kategorya</th>
+                    <th>Presyo (Pcs)</th>
+                    <th>Presyo (Pack)</th>
+                    <th>Stock</th>
+                    <th>Aksyon</th>
+                  </tr>
+                </thead>
+                <tbody id="inventory-table-body">
+                  <!-- Dito lalabas ang table list ng items -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ==================================== -->
+  <!-- MODAL AREA SYSTEM -->
+  <!-- ==================================== -->
+
+  <!-- MODAL A: CHECKOUT -->
+  <div class="modal fade" id="checkoutModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold">Pagproseso ng Bayad</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4 text-center">
+          <span class="text-muted fw-bold d-block mb-1">KABUUANG SINGIL</span>
+          <h1 id="modal-checkout-total" class="display-4 fw-bold text-success mb-4">₱0.00</h1>
+          <div class="mb-4 text-start">
+            <label class="form-label fw-bold text-secondary">Tinanggap na Cash mula sa Customer:</label>
+            <div class="input-group input-group-lg shadow-sm">
+              <span class="input-group-text bg-light fw-bold">₱</span>
+              <input type="number" id="checkout-cash-received" class="form-control" placeholder="0.00" oninput="calculateChange()">
+            </div>
+          </div>
+          <div class="d-flex justify-content-between align-items-center bg-light p-3 rounded border">
+            <span class="h5 mb-0 text-muted">Sukli ng Customer:</span>
+            <span id="checkout-change-display" class="h3 mb-0 fw-bold text-dark">₱0.00</span>
+          </div>
+        </div>
+        <div class="modal-footer border-0 p-3 bg-light">
+          <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal">I-cancel</button>
+          <button type="button" class="btn btn-success px-5 fw-bold" onclick="submitCheckout()">I-print at I-save</button>
         </div>
       </div>
- </div>
+    </div>
+  </div>
 
- <div class="user-badge" id="userBadge">
- <div class="user-avatar" id="userAvatar">?</div>
- <div class="user-info">
- <div class="user-name" id="userNameDisplay">Guest</div>
- <div class="user-role" id="userRoleDisplay">Viewer</div>
- </div>
- <button class="btn-logout" onclick="doLogout()" title="Logout">Exit</button>
- </div>
-
- <nav class="nav-menu" id="navMenu">
- <!-- dynamically filled -->
- </nav>
-
- <div class="sidebar-footer">
- <button class="active-users-btn" onclick="showActiveUsers()"> Active Users</button>
- </div>
- </aside>
-
- <!-- MAIN CONTENT -->
- <main class="main-content">
- <!-- TOP BAR -->
- <header class="topbar">
-      <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Toggle Sidebar">&#9776;</button>
-      <div class="topbar-title" id="topbarTitle">Dashboard</div>
-      <div class="topbar-right">
-        <div class="clock" id="liveClock"></div>
+  <!-- MODAL B: DIGITAL E-RECEIPT DISPLAY -->
+  <div class="modal fade" id="receiptDisplayModal" data-bs-backdrop="static" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold"><i class="bi bi-receipt me-2"></i>Resibo ng Transaksyon</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body bg-light p-3">
+          <!-- App.js target location -->
+          <div id="receipt-modal-body-area"></div>
+        </div>
+        <div class="modal-footer d-grid gap-2 border-0 bg-light">
+          <button type="button" class="btn btn-success fw-bold" onclick="downloadReceiptAsImage()">
+            <i class="bi bi-download me-1"></i> I-download (.PNG)
+          </button>
+          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Isara</button>
+        </div>
       </div>
-    </header>
+    </div>
+  </div>
 
- <!-- PAGE CONTENT -->
- <div class="page-content" id="pageContent">
- <!-- Pages loaded here -->
- </div>
- </main>
-</div>
+  <!-- MODAL C: EXCEL BULK IMPORT -->
+  <div class="modal fade" id="importModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content border-0 shadow-lg">
+        <div class="modal-header">
+          <h5 class="modal-title fw-bold"><i class="bi bi-file-earmark-excel me-2"></i>Bulk Product Import</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body p-4">
+          <p class="small text-muted mb-3">Mag-upload ng <strong>.xlsx</strong>, <strong>.xls</strong>, o <strong>.csv</strong> file. Siguraduhing tugma ang headers (ID, Name, Barcode, Category, PricePiece, PricePack, Stock, Unit) para hindi magkaproblema ang import.</p>
+          <input class="form-control shadow-sm" type="file" id="bulkImportFileInput" accept=".xlsx, .xls, .csv">
+        </div>
+      </div>
+    </div>
+  </div>
 
-<!-- MODALS -->
-<div id="modalOverlay" class="modal-overlay hidden" onclick="closeModal(event)">
- <div class="modal-box" id="modalBox">
- <button class="modal-close" onclick="closeModalDirect()" aria-label="Close Modal"></button>
- <div id="modalContent"></div>
- </div>
-</div>
+  <!-- GLOBAL SYSTEM NOTIFICATIONS & LOADING ANIMATIONS -->
+  <div id="loadingOverlay" class="d-none position-fixed top-0 start-0 w-100 h-100 d-flex flex-column align-items-center justify-content-center bg-dark bg-opacity-75" style="z-index: 9999;">
+    <div class="spinner-border text-success mb-2" style="width: 3rem; height: 3rem;" role="status"></div>
+    <div id="loadingText" class="text-white fw-bold">Nagpoproseso, pakihintay...</div>
+  </div>
+  <div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1055;"></div>
 
-<!-- TOAST -->
-<div id="toastContainer" class="toast-container"></div>
+  <!-- ==================================== -->
+  <!-- EXTERNAL DEPENDENCIES & CORE SCRIPTS -->
+  <!-- ==================================== -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  
+  <!-- Dito ikakabit ang isinulat nating app.js logic scripts -->
+  <script src="app.js"></script>
 
-<!-- RECEIPT PREVIEW MODAL -->
-<div id="receiptModal" class="receipt-modal hidden">
- <div class="receipt-backdrop" onclick="closeReceiptModal()"></div>
- <div class="receipt-wrapper">
- <div id="receiptContent"></div>
- <div class="receipt-actions">
- <button class="btn-download-receipt" onclick="downloadReceipt()">⬇ Download PNG</button>
- <button class="btn-close-receipt" onclick="closeReceiptModal()"> Close</button>
- </div>
- </div>
-</div>
-
-<!-- ACTIVE USERS PANEL -->
-<div id="activeUsersPanel" class="active-users-panel hidden">
- <div class="aup-backdrop" onclick="hideActiveUsers()"></div>
- <div class="aup-card">
- <h3> Currently Active Users</h3>
- <div id="activeUsersList"></div>
- <button class="btn-sm" onclick="hideActiveUsers()">Close</button>
- </div>
-</div>
-
-<script src="app.js"></script>
 </body>
 </html>
